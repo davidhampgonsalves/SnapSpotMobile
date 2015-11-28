@@ -1,20 +1,11 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- */
 'use strict';
 
 var React = require('react-native');
 var bgGeo = require('react-native-background-geolocation');
 var ActivityView = require('react-native-activity-view');
-var uuid = require("uuid");
 
-var API_HOST = 'http://192.241.229.86:9000';
-var STATES = {
-  starting: 'STARTING',
-  started: 'STARTED',
-  stopped: 'STOPPED',
-};
+import tripActions from './src/modules/trip/actions'
+const reactor = require('.reactor')
 
 var {
   AppRegistry,
@@ -54,23 +45,7 @@ var SnapSpotMobile = React.createClass({
     bgGeo.on('location', (location) => {
       console.log('- [js]location: ', JSON.stringify(location));
 
-      //TODO: handle trip not created an queue position 
-
-      var url = API_HOST + "v1/trip/" + this.state.id + "position/" + this.state.id;
-      var params = {
-        'secret': this.state.secret,
-        'lat': location.coords.latitude,
-        'lon': location.coords.longitude,
-      };
-
-      fetch(url, {method: "POST", body: JSON.stringify(params)})
-        .then((resp) => resp.json())
-        .then((resp) => {
-          console.log(resp);
-        })
-        .catch((error) => {
-          console.warn(error);
-        });
+      tripActions.newLocation(location)
       
       //todo; where can I put this that doesn't cause infinate loop
       //wipe sql cach on each location 
@@ -84,7 +59,7 @@ var SnapSpotMobile = React.createClass({
   },
 
   _shareTrip() {
-    this.setState({tripState: STATES.starting});
+    tripActions.startTrip(30)
 
     // TODO: only start if user shared after this is committed: https://github.com/naoufal/react-native-activity-view/pull/21
     ActivityView.show({
@@ -93,19 +68,7 @@ var SnapSpotMobile = React.createClass({
       imageUrl: 'https://facebook.github.io/react/img/logo_og.png'
     });
 
-    var id = uuid.v4();
-    var url = API_HOST + "/v1/trip/" + id;
-    fetch(url, {method: "POST", body: JSON.stringify({remaining-minutes: 30})})
-      .then((response) => response.json())
-      .then((resp) => {
-        this.setState({
-          id: id,
-          secret: resp.secret,
-          state: STATES.started,
-        });
-      }).catch((error) => {
-        console.warn(error);
-      });
+    
     bgGeo.start(function() { console.log('- [js] bgGeo started successfully'); });
   },
 
@@ -117,6 +80,8 @@ var SnapSpotMobile = React.createClass({
     });
 
     bgGeo.stop();
+
+    // tripActions.endTrip()
   },
 
   render() {

@@ -3,12 +3,35 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node_modules/react-native/packager/packager.sh"
+    "start": "node_modules/react-native/packager/packager.sh",
+    "test": "NODE_ENV=test jest"
+  },
+  "jest": {
+    "scriptPreprocessor": "<rootDir>/node_modules/react-native/jestSupport/preprocessor.js",
+    "setupEnvScriptFile": "<rootDir>/jest-env.js",
+    "testRunner": "<rootDir>/node_modules/jest-cli/src/testRunners/jasmine/jasmine2.js",
+    "moduleNameMapper": {
+      "^image![a-zA-Z0-9$_-]+$": "GlobalImageStub",
+      "^[./a-zA-Z0-9$_-]+\\.png$": "RelativeImageStub"
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "testFileExtensions": [
+      "js"
+    ]
   },
   "dependencies": {
-    "react-native": "^0.9.0",
-    "react-native-activity-view": "^0.2.5",
-    "react-native-background-geolocation": "0.0.10",
+    "keymirror": "^0.1.1",
+    "nuclear-js": "1.2.1",
+    "react-native": "^0.14.2",
+    "react-native-activity-view": "*",
+    "react-native-background-geolocation": "^0.1.1",
     "uuid": "2.0.1"
+  },
+  "devDependencies": {
+    "jest": "*",
+    "jest-cli": "^0.8.0",
+    "node-fetch": "*"
   }
 }
