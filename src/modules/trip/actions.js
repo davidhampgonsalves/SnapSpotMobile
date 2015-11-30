@@ -23,6 +23,11 @@ exports.updateTrip = function updateTrip(trip, remainingMinutes) {
   apiActions.updateTrip(trip, remainingMinutes)
 }
 
+exports.deleteTrip = function deleteTrip(trip) {
+  reactor.dispatch(TRIP_DELETING, {trip: trip})
+  apiActions.deleteTrip(trip)  
+}
+
 exports.newLocation = function newLocation(location) {
   const trip = reactor.evaluateToJS(tripGetters.currentTrip)
 }

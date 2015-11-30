@@ -38,7 +38,7 @@ exports.createTrip = function createTrip(id, remainingMinutes) {
   .then((resp) => resp.json())
   .then((resp) => {
     if(resp.hasOwnProperty("errors")) {
-      console.error(url, resp)
+      console.error('create-trip', url, resp)
       reactor.dispatch(TRIP_CREATE_ERRORS, { errors: resp.errors })
       return
     }
@@ -46,7 +46,7 @@ exports.createTrip = function createTrip(id, remainingMinutes) {
     reactor.dispatch(TRIP_CREATED, {id: id, secret: resp.secret})
   })
   .catch((error) => {
-    console.warn(url, error)
+    console.error('create-trip', url, error)
     reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: errors})
   })
 }
@@ -70,7 +70,7 @@ exports.updateTrip = function updateTrip(trip, remainingMinutes) {
   .then((resp) => resp.json())
   .then((resp) => {
     if(resp.hasOwnProperty("errors")) {
-      console.error(url, resp)
+      console.error('update-trip', url, resp)
       reactor.dispatch(TRIP_UPDATE_ERRORS, { originalTrip: trip, errors: resp.errors })
       return
     }
@@ -78,7 +78,38 @@ exports.updateTrip = function updateTrip(trip, remainingMinutes) {
     reactor.dispatch(TRIP_UPDATED, {remainingMinutes: remainingMinutes})
   })
   .catch((error) => {
-    console.warn(url, error)
+    console.error('upate-trip', url, error)
+    reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: errors})
+  })
+}
+
+exports.deleteTrip = function deleteTrip(trip, remainingMinutes) {
+  var url = API_HOST + "/v1/trips/" + trip.id
+  var params = {
+    id: trip.id,
+    secret: trip.secret,
+  }
+
+  fetch(url, {
+    method: "DELETE", 
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(params)
+  })
+  .then((resp) => resp.json())
+  .then((resp) => {
+    if(resp.hasOwnProperty("errors")) {
+      console.error('delete-trip: ', url, resp)
+      reactor.dispatch(TRIP_DELETE_ERRORS, { originalTrip: trip, errors: resp.errors })
+      return
+    }
+
+    reactor.dispatch(TRIP_DELETED)
+  })
+  .catch((error) => {
+    console.error('delete-trip: ', url, error)
     reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: errors})
   })
 }

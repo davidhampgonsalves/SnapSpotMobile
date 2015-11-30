@@ -8,6 +8,7 @@ import statuses from '../statuses'
 import {
   TRIP_STARTING,
   TRIP_UPDATING,
+  TRIP_DELETING,
   TRIP_CREATE_ERRORS,
   TRIP_UPDATE_ERRORS,
   CLEAR_ERRORS,
@@ -37,13 +38,12 @@ export default Store({
     this.on(TRIP_CREATED, tripStarted)
     // assume updates will succeed (it will be rolled back on err)
     this.on(TRIP_UPDATING, tripUpdated)
-    this.on(TRIP_DELETED, tripEnded)
+    this.on(TRIP_DELETING, tripEnded)
+    this.on(LOCATION_RECIEVED, addLocation)
+    this.on(CLEAR_ERRORS, clearErrors)
+
     this.on(TRIP_CREATE_ERRORS, tripCreateFailed)
     this.on(TRIP_UPDATE_ERRORS, tripUpdateFailed)
-
-    this.on(LOCATION_RECIEVED, addLocation)
-
-    this.on(CLEAR_ERRORS, clearErrors)
   }
 })
 

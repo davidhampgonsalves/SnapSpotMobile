@@ -5,6 +5,7 @@ import keyMirror from 'keyMirror'
 export default keyMirror({
   TRIP_STARTING: null,
   TRIP_UPDATING: null,
+  TRIP_DELETING: null,
 
   LOCATION_RECIEVED: null, 
 

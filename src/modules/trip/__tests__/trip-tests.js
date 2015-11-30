@@ -31,6 +31,16 @@ describe('trip actions', function() {
 
     trip.actions.updateTrip(newTrip, 10)
   })
+
+  it('delete', function(done) {
+    reactor.observe(trip.getters.trip, (state) => {
+      const t = state.toJS().trip
+      expect(t.id).toNotExist
+      done()
+    })
+
+    trip.actions.updateTrip(newTrip, 10)
+  })
 })
 
 describe('trip', function() {
