@@ -2,7 +2,6 @@
 
 const reactor = require('../../reactor')
 import {
-  TRIP_DELETED,
   TRIP_UPDATED,
   POSITION_ADDED,
 } from './action-types'
@@ -27,17 +26,19 @@ exports.createTrip = function createTrip({id, remainingMinutes}, success, failur
   })
   .then((resp) => resp.json())
   .then((resp) => {
-    if(!resp || resp.hasOwnProperty("errors")) {
-      console.error('create-trip', url, resp)
-      failure(resp.errors)
+    if(resp && !resp.hasOwnProperty("errors")) {
+      success(resp.secret)
       return
     }
 
-    success(resp.secret)
+    console.error('create-trip', url, resp)
+    failure(resp.errors)
   })
   .catch((error) => {
     console.error('create-trip', url, error)
+    //TODO: need to pass back error types so can support api error and network error
     reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: error})
+    failure(error)
   })
 }
 
@@ -68,12 +69,12 @@ exports.updateTrip = function updateTrip(trip, remainingMinutes) {
     reactor.dispatch(TRIP_UPDATED, {remainingMinutes: remainingMinutes})
   })
   .catch((error) => {
-    console.error('upate-trip', url, error)
+    console.error('update-trip', url, error)
     reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: errors})
   })
 }
 
-exports.deleteTrip = function deleteTrip(trip, remainingMinutes) {
+exports.deleteTrip = function deleteTrip(trip, success, failure) {
   var url = API_HOST + "/v1/trips/" + trip.id
   var params = {
     id: trip.id,
@@ -90,13 +91,14 @@ exports.deleteTrip = function deleteTrip(trip, remainingMinutes) {
   })
   .then((resp) => resp.json())
   .then((resp) => {
-    if(resp.hasOwnProperty("errors")) {
-      console.error('delete-trip: ', url, resp)
-      reactor.dispatch(TRIP_DELETE_ERRORS, { originalTrip: trip, errors: resp.errors })
+    if(resp && !resp.hasOwnProperty("errors")) {
+      success(trip)
       return
     }
 
-    reactor.dispatch(TRIP_DELETED)
+    console.error('delete-trip: ', url, resp)
+    reactor.dispatch(TRIP_DELETE_ERRORS, { originalTrip: trip, errors: resp.errors })
+    failure(resp.errors)
   })
   .catch((error) => {
     console.error('delete-trip: ', url, error)
@@ -105,7 +107,6 @@ exports.deleteTrip = function deleteTrip(trip, remainingMinutes) {
 }
 
 exports.addPosition = function addPosition(trip, position) {
-
   const url = API_HOST + "/v1/trips/" + trip.id + "/positions"
   const params = {
     'secret': trip.secret,
