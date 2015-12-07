@@ -2,16 +2,6 @@
 
 const reactor = require('../../reactor')
 import {
-  TRIP_CREATE,
-  TRIP_UPDATE,
-  TRIP_DELETE,
-  TRIP_CREATE_ERRORS,
-  TRIP_UPDATE_ERRORS,
-  TRIP_DELETE_ERRORS,
-  CLEAR_ERRORS,
-} from '../trip/action-types'
-import {
-  TRIP_CREATED,
   TRIP_DELETED,
   TRIP_UPDATED,
   POSITION_ADDED,
@@ -21,7 +11,7 @@ import trip from '../trip/index'
 
 var API_HOST = 'http://192.241.229.86:9000'
 
-exports.createTrip = function createTrip(id, remainingMinutes) {
+exports.createTrip = function createTrip({id, remainingMinutes}, success, failure) {
   var url = API_HOST + "/v1/trips/" + id
   var params = {
     "remaining-minutes": remainingMinutes,
@@ -37,17 +27,17 @@ exports.createTrip = function createTrip(id, remainingMinutes) {
   })
   .then((resp) => resp.json())
   .then((resp) => {
-    if(resp.hasOwnProperty("errors")) {
+    if(!resp || resp.hasOwnProperty("errors")) {
       console.error('create-trip', url, resp)
-      reactor.dispatch(TRIP_CREATE_ERRORS, { errors: resp.errors })
+      failure(resp.errors)
       return
     }
 
-    reactor.dispatch(TRIP_CREATED, {id: id, secret: resp.secret})
+    success(resp.secret)
   })
   .catch((error) => {
     console.error('create-trip', url, error)
-    reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: errors})
+    reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: error})
   })
 }
 

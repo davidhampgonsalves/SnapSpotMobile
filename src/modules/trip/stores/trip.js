@@ -9,13 +9,13 @@ import {
   TRIP_STARTING,
   TRIP_UPDATING,
   TRIP_DELETING,
+  TRIP_CREATED,
   TRIP_CREATE_ERRORS,
   TRIP_UPDATE_ERRORS,
   CLEAR_ERRORS,
   LOCATION_RECIEVED,
 } from '../action-types'
 import {
-  TRIP_CREATED,
   TRIP_UPDATED,
   TRIP_DELETED,
 } from '../../api/action-types'

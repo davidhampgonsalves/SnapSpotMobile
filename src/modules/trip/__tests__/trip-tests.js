@@ -5,7 +5,7 @@ const reactor = require('../../../reactor')
 const trip = require('..')
 const api = require('../../api')
 
-describe('trip actions', function() {
+describe('trip > crud', function() {
   var newTrip
 
   it('create', function(done) {
@@ -43,7 +43,7 @@ describe('trip actions', function() {
   })
 })
 
-describe('trip', function() {
+describe('trip > validation', function() {
   beforeEach(function() {
     reactor.reset()
   })
@@ -85,5 +85,24 @@ describe('trip', function() {
     })
 
     trip.actions.clearErrors() 
+  })
+})
+
+
+
+describe('trip > positions', function() {
+  var newTrip
+
+  it('create', function(done) {
+   reactor.observe(trip.getters.trip, (state) => {
+     const t = state.toJS().trip
+     if(t.status === trip.statuses.started) {
+        expect(t.id).toExist
+        newTrip = t
+        done()
+      }
+    })
+
+    trip.actions.startTrip(30)
   })
 })

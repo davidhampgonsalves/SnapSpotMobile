@@ -7,6 +7,8 @@ export default keyMirror({
   TRIP_UPDATING: null,
   TRIP_DELETING: null,
 
+  TRIP_CREATED: null, 
+
   LOCATION_RECIEVED: null, 
 
   TRIP_CREATE_ERRORS: null, 
