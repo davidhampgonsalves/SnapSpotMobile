@@ -108,19 +108,13 @@ describe('trip > location', function() {
   })
 
   it('new location', function(done) {
-    var queueLength = 0
-    reactor.observe(actionQueue.getters.queue, (state) => {
-      var curLength = state.toJS().actionQueue.length
-      if(queueLength === 1 && curLength === 0) {
-        expect(curLength).toBe(0)
-        done()
-      } else if(curLength === 0) {
-        expect(curLength).toBe(1)
-        done()
-      }
-      queueLength = curLength
-    })
     const location = {coords: {latitude: 23, longitude: 12}}
     trip.actions.newLocation(newTrip, location)
+
+    reactor.observe(actionQueue.getters.queue, (state) => {
+      var curLength = state.toJS().actionQueue.length
+      expect(curLength).toBe(0)
+      done()
+    })
   })
 })
