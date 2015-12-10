@@ -11,12 +11,9 @@ export default keyMirror({
   TRIP_UPDATED: null, 
   TRIP_DELETED: null,
 
-  LOCATION_RECIEVED: null, 
-
   TRIP_CREATE_ERRORS: null, 
   TRIP_UPDATE_ERRORS: null, 
   TRIP_DELETE_ERRORS: null, 
 
-  POSITION_ERROR: null, 
   CLEAR_ERRORS: null
 })

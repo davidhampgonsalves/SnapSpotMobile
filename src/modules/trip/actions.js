@@ -5,7 +5,7 @@ var uuid = require('uuid')
 import reactor from'../../reactor'
 import apiActions from '../api/actions'
 import queueActions from '../action-queue/actions'
-import Action from '../action-queue/action'
+import getters from './getters'
 
 import {
   TRIP_STARTING,
@@ -17,7 +17,6 @@ import {
   TRIP_CREATED,
   TRIP_CREATE_ERRORS,
   TRIP_UPDATE_ERRORS,
-  TRIP_DELETE_ERRORS,
 } from './action-types'
 
 exports.startTrip = function startTrip(remainingMinutes) {
@@ -32,9 +31,8 @@ exports.startTrip = function startTrip(remainingMinutes) {
   const failure = function tripCreateError(err) {
     reactor.dispatch(TRIP_CREATE_ERRORS, { errors: err })
   }
-  const createTripAction = new Action(apiActions.createTrip, optionArgs, success, failure) 
 
-  queueActions.add(createTripAction)
+  queueActions.add('Create Trip', apiActions.createTrip, optionArgs, success, failure)
 }
 
 exports.updateTrip = function updateTrip(trip, remainingMinutes) {
@@ -49,16 +47,14 @@ exports.deleteTrip = function deleteTrip(trip) {
   const success = function tripDeleteSuccess(secret) {
     reactor.dispatch(TRIP_DELETED, {trip: trip})
   }
-  const failure = function tripDeleteError(err) {
-    reactor.dispatch(TRIP_DELETE_ERRORS, { errors: err })
-  }
-  const deleteTripAction = new Action(apiActions.deleteTrip, optionArgs, success, failure) 
 
-  queueActions.add(deleteTripAction)
+  queueActions.add('Delete Trip', apiActions.deleteTrip, optionArgs, success)
 }
 
-exports.newLocation = function newLocation(location) {
-  const trip = reactor.evaluateToJS(tripGetters.currentTrip)
+exports.newLocation = function newLocation(trip, location) {
+  const optionArgs = {trip: trip, location: location}
+
+  queueActions.add("Add Location", apiActions.addLocation, optionArgs)
 }
 
 exports.clearErrors = function clearErrors() {

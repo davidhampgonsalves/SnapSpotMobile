@@ -3,7 +3,6 @@
 const reactor = require('../../reactor')
 import {
   TRIP_UPDATED,
-  POSITION_ADDED,
 } from './action-types'
 const deviceActionTypes = require('../device/action-types')
 import trip from '../trip/index'
@@ -97,7 +96,6 @@ exports.deleteTrip = function deleteTrip(trip, success, failure) {
     }
 
     console.error('delete-trip: ', url, resp)
-    reactor.dispatch(TRIP_DELETE_ERRORS, { originalTrip: trip, errors: resp.errors })
     failure(resp.errors)
   })
   .catch((error) => {
@@ -106,27 +104,34 @@ exports.deleteTrip = function deleteTrip(trip, success, failure) {
   })
 }
 
-exports.addPosition = function addPosition(trip, position) {
+exports.addLocation = function addLocation({trip, location}, success, failure) {
   const url = API_HOST + "/v1/trips/" + trip.id + "/positions"
   const params = {
-    'secret': trip.secret,
-    'lat': location.coords.latitude,
-    'lon': location.coords.longitude,
+    secret: trip.secret,
+    lat: location.coords.latitude,
+    lon: location.coords.longitude,
   }
 
-  fetch(url, {method: "POST", body: JSON.stringify(params)})
+  fetch(url, {
+    method: "POST", 
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params)
+  })
   .then((resp) => resp.json())
   .then((resp) => {
-    if(resp.hasOwnProperty("errors")) {
-      console.error(resp)
-      reactor.dispatch(TRIP_ERRORS, {action: LOCATION_RECIEVED, errors: resp.errors})
+    if(resp && !resp.hasOwnProperty("errors")) {
+      success()
       return
     }
 
-    reactor.dispatch(POSITION_ADDED)
+    console.error('add-location: ', url, resp)
+    failure(resp.errors)
   })
   .catch((error) => {
-    console.warn(url, error)
+    console.error('add-location', url, error)
     reactor.dispatch(deviceActionTypes.NETWORK_ERROR, resp.errors)
   })
 }

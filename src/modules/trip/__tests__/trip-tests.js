@@ -4,6 +4,7 @@
 const reactor = require('../../../reactor')
 const trip = require('..')
 const api = require('../../api')
+const actionQueue = require('../../action-queue')
 
 describe('trip > crud', function() {
   var newTrip
@@ -90,19 +91,36 @@ describe('trip > validation', function() {
 
 
 
-describe('trip > positions', function() {
+describe('trip > location', function() {
   var newTrip
 
-  it('create', function(done) {
+  it('create trip', function(done) {
    reactor.observe(trip.getters.trip, (state) => {
      const t = state.toJS().trip
      if(t.status === trip.statuses.started) {
         expect(t.id).toExist
         newTrip = t
         done()
-      }
+      } 
     })
 
     trip.actions.startTrip(30)
+  })
+
+  it('new location', function(done) {
+    var queueLength = 0
+    reactor.observe(actionQueue.getters.queue, (state) => {
+      var curLength = state.toJS().actionQueue.length
+      if(queueLength === 1 && curLength === 0) {
+        expect(curLength).toBe(0)
+        done()
+      } else if(curLength === 0) {
+        expect(curLength).toBe(1)
+        done()
+      }
+      queueLength = curLength
+    })
+    const location = {coords: {latitude: 23, longitude: 12}}
+    trip.actions.newLocation(newTrip, location)
   })
 })
