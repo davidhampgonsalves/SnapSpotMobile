@@ -127,7 +127,6 @@ exports.addLocation = function addLocation({trip, location}, success, failure) {
       return
     }
 
-    console.error('add-location: ', url, resp)
     failure(resp.errors)
   })
   .catch((error) => {

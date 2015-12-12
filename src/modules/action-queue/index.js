@@ -6,7 +6,6 @@ import getters from './getters'
 import Action from './action'
 import store from './stores/action-queue'
 
-
 reactor.registerStores({
   'actionQueue': store
 })

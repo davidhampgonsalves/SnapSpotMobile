@@ -1,6 +1,6 @@
 'use strict'
 
-//importing trip causes action events to fire before listeners have been bound
+//imports causes action events to fire before listeners have been bound
 const reactor = require('../../../reactor')
 const trip = require('..')
 const api = require('../../api')
@@ -109,12 +109,14 @@ describe('trip > location', function() {
 
   it('new location', function(done) {
     const location = {coords: {latitude: 23, longitude: 12}}
-    trip.actions.newLocation(newTrip, location)
 
     reactor.observe(actionQueue.getters.queue, (state) => {
       var curLength = state.toJS().actionQueue.length
-      expect(curLength).toBe(0)
-      done()
+      if(curLength === 0) {
+        expect(curLength).toBe(0)
+        done()
+      }
     })
+    trip.actions.newLocation(newTrip, location)
   })
 })

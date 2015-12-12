@@ -29,6 +29,7 @@ exports.startTrip = function startTrip(remainingMinutes) {
     reactor.dispatch(TRIP_CREATED, {id: id, secret: secret})
   }
   const failure = function tripCreateError(err) {
+    console.error("trip/actions failure", err)
     reactor.dispatch(TRIP_CREATE_ERRORS, { errors: err })
   }
 
@@ -48,13 +49,21 @@ exports.deleteTrip = function deleteTrip(trip) {
     reactor.dispatch(TRIP_DELETED, {trip: trip})
   }
 
-  queueActions.add('Delete Trip', apiActions.deleteTrip, optionArgs, success)
+  queueActions.add('Delete Trip', apiActions.deleteTrip, optionArgs, success, undefined, true)
 }
 
 exports.newLocation = function newLocation(trip, location) {
-  const optionArgs = {trip: trip, location: location}
 
-  queueActions.add("Add Location", apiActions.addLocation, optionArgs)
+  const tripAddLocationAction = function tripAddLocationAction(options, success, failure) {
+    const trip = reactor.evaluate(getters.trip)
+    const optionArgs = {trip: trip, location: location}
+    // TODO: what if trip is not set (delete was called, position comes in late)? 
+    // how do I remove the action? set isComplete and then run process? 
+    // maybe when delete finishes it could call clear stale which would remove positions added after a delete but before a create
+    apiActions.addLocation.apply(undefined, [optionArgs, success, failure]) 
+  }
+
+  queueActions.add("Add Location", tripAddLocationAction, {})
 }
 
 exports.clearErrors = function clearErrors() {

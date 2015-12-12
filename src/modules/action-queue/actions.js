@@ -6,37 +6,49 @@ import reactor from '../../reactor'
 
 const queue = []
 
-exports.add = function add(description, func, argOptions, success, failure) { 
-  const actionQueueSuccess = function actionQueueWuccess() {
-
-    console.log('dispatch', QUEUE_CHANGE)
+exports.add = function add(description, func, argOptions, success, failure, isCritical) { 
+  const actionQueueSuccess = function actionQueueSuccess() {
     reactor.dispatch(QUEUE_CHANGE, queue)
     if(success)
       success.apply(undefined, arguments)
+    exports.process() 
   }
-  const action = new Action(description, func, argOptions, actionQueueSuccess, failure)
+  const actionQueueFailure = function actionQueueFailure() {
+    if(failure)
+      failure.apply(undefined, arguments)
+    exports.process() 
+  }
+
+  const action = new Action(description, func, argOptions, actionQueueSuccess, actionQueueFailure, isCritical)
 
   queue.push(action)
-  console.log('dispatch', QUEUE_CHANGE)
   reactor.dispatch(QUEUE_CHANGE, queue)
   exports.process()
 }
 
+// Run action synchronously 
 exports.process = function process() {
-  if(queue.length === 0)
-    return
+  while(queue.length > 0) {
+    action = queue[queue.length-1]
 
-  var action = queue[0]
-  while(action.complete || action.attemt >= 2) {
-    queue.shift()
-    action = queue[0]
+    if(action.isRunning) {
+      if(!action.hasExpired())
+        break
+      action.isComplete = true
+    }
+
+    if(action.isComplete || action.attempt >= 2) {
+      queue.shift()  
+    } else {
+      action.run()
+      break
+    }
   }
-  
+
   reactor.dispatch(QUEUE_CHANGE, queue)
-  action.run()
 }
 
-//Removes all actions that aren't trip deletes
+//Removes all actions that aren't critical (trip delete)
 exports.clearStale = function clearStale() {
   for(var i=queue.length-1 ; i >= 0 ; i--) {
     var action = queue[i]
