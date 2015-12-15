@@ -6,6 +6,8 @@ import reactor from '../../reactor'
 
 const queue = []
 
+exports.queue = queue
+
 exports.add = function add(description, func, argOptions, success, failure, isCritical) { 
   const actionQueueSuccess = function actionQueueSuccess() {
     reactor.dispatch(QUEUE_CHANGE, queue)
@@ -26,10 +28,9 @@ exports.add = function add(description, func, argOptions, success, failure, isCr
   exports.process()
 }
 
-// Run action synchronously 
 exports.process = function process() {
   while(queue.length > 0) {
-    action = queue[queue.length-1]
+    action = queue[0]
 
     if(action.isRunning) {
       if(!action.hasExpired())

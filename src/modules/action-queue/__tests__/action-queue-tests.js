@@ -4,9 +4,6 @@
 const actionQueue = require('..')
 const reactor = require('../../../reactor')
 
-// test
-// add actions verify they are processed
-// add actions and a delete action, then clear the queue and check for the delete action
 const neverFinishingAction = (options, success, failure) => {}
 
 describe('action queue > actions', function() {
@@ -40,5 +37,31 @@ describe('action queue > actions', function() {
     })
 
     actionQueue.actions.clearStale()
+  })
+
+
+  it('queue is synchronous', function(done) {
+    reactor.observe(actionQueue.getters.queue, (state) => {
+      const queue = actionQueue.actions.queue
+
+      expect(queue[0].isRunning).toBe(true)
+      expect(queue[1].isRunning).toBe(false)
+      expect(queue[2].isRunning).toBe(false)
+      done()
+    })
+
+    actionQueue.actions.add('test action', neverFinishingAction, {}, undefined, undefined) 
+  })
+
+  it('expired actions are killed', function(done) {
+    reactor.observe(actionQueue.getters.queue, (state) => {
+      const queueLength = state.get('actionQueue').length
+      expect(queueLength).toBe(1)
+      done()
+    })
+
+    const queue = actionQueue.actions.queue
+    queue[0].wasRunAt = 0
+    actionQueue.actions.process()
   })
 })

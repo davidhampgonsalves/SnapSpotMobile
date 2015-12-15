@@ -11,7 +11,6 @@ function Action(description, func, argOptions, success, failure, isCritical) {
     throw "undefined success was passed to action"
 
   this.id = uuid.v4()
-  this.when = new Date()
   this.attempt = 0
   this.func = func
   this.description = description
@@ -21,26 +20,33 @@ function Action(description, func, argOptions, success, failure, isCritical) {
   this.failure = failure || function() {}
   this.isComplete = false
   this.isRunning = false
+  this.wasRunAt = null
 }
 
 Action.prototype.run = function run() {
   // es6 fat arrow => doesn't provide arguments
   this.attempt += 1
   this.isRunning = true
+  this.wasRunAt = new Date()
   const self = this
   this.func(this.argOptions, function actionSuccess() {
     self.isRunning = false
+    self.wasRunAt = null
     self.isComplete = true
     self.success.apply(undefined, arguments)
   }, function actionFailure() {
     self.isRunning = false
+    self.wasRunAt = null
     self.failure.apply(undefined, arguments)
   })
 }
 
 Action.prototype.hasExpired = function hasExpired() {
-  const age = new Date() - this.when
-  return age > 30 * 1000
+  if(!this.isRunning)
+    return
+
+  const runDurration = new Date() - this.wasRunAt
+  return runDurration > 30 * 1000
 }
 
 export default Action 
