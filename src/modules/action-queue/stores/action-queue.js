@@ -1,7 +1,7 @@
 'use strict'
 
 import { Store, toImmutable } from 'nuclear-js'
-import { QUEUE_CHANGE } from '../action-types'
+import actionTypes from '../action-types'
 import getters from '../getters'
 
 
@@ -15,10 +15,11 @@ export default Store({
   },
 
   initialize() {
-    this.on(QUEUE_CHANGE, queueChange)
+    this.on(actionTypes.QUEUE_CHANGE, queueChange)
   }
 })
 
 function queueChange(state, queue) {
-  return state.setIn(getters.queue, queue.filter((action) => !action.complete).map((action) => action.description))
+  const descriptions = queue.filter((action) => !action.complete).map((action) => action.description)
+  return state.setIn(getters.queue, toImmutable(descriptions))
 }

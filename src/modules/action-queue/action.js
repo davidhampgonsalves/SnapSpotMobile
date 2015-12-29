@@ -3,12 +3,11 @@
 import uuid from 'uuid'
 import keyMirror from 'keyMirror'
 import reactor from '../../reactor'
-import { QUEUE_CHANGE } from './action-types'
 
 
 function Action(description, func, argOptions, success, failure, isCritical) {
   if(!success)
-    throw "undefined success was passed to action"
+    throw "success callback must be passed to action"
 
   this.id = uuid.v4()
   this.attempt = 0

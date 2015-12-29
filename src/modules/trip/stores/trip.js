@@ -4,21 +4,7 @@ import { Store, toImmutable } from 'nuclear-js'
 
 import getters from '../getters'
 import statuses from '../statuses'
-
-import {
-  TRIP_STARTING,
-  TRIP_UPDATING,
-  TRIP_DELETING,
-  TRIP_CREATED,
-  TRIP_CREATE_ERRORS,
-  TRIP_UPDATE_ERRORS,
-  CLEAR_ERRORS,
-  LOCATION_RECIEVED,
-} from '../action-types'
-import {
-  TRIP_UPDATED,
-  TRIP_DELETED,
-} from '../../api/action-types'
+import actionTypes from '../action-types'
 
 const initialState = toImmutable({
   trip: {
@@ -34,16 +20,16 @@ export default Store({
   },
 
   initialize() {
-    this.on(TRIP_STARTING, tripStarting)
-    this.on(TRIP_CREATED, tripStarted)
+    this.on(actionTypes.TRIP_STARTING, tripStarting)
+    this.on(actionTypes.TRIP_CREATED, tripStarted)
     // assume updates will succeed (it will be rolled back on err)
-    this.on(TRIP_UPDATING, tripUpdated)
-    this.on(TRIP_DELETING, tripEnded)
-    this.on(LOCATION_RECIEVED, addLocation)
-    this.on(CLEAR_ERRORS, clearErrors)
+    this.on(actionTypes.TRIP_UPDATING, tripUpdated)
+    this.on(actionTypes.TRIP_DELETING, tripEnded)
+    this.on(actionTypes.LOCATION_RECIEVED, addLocation)
+    this.on(actionTypes.CLEAR_ERRORS, clearErrors)
 
-    this.on(TRIP_CREATE_ERRORS, tripCreateFailed)
-    this.on(TRIP_UPDATE_ERRORS, tripUpdateFailed)
+    this.on(actionTypes.TRIP_CREATE_ERRORS, tripCreateFailed)
+    this.on(actionTypes.TRIP_UPDATE_ERRORS, tripUpdateFailed)
   }
 })
 
@@ -70,7 +56,7 @@ function tripEnded(state, trip) {
 }
 
 function addLocation(state, location) {
-  state.updateIn(getters.positions, positions => positions.push(location)) 
+  return state.updateIn(getters.positions, positions => positions.push(location)) 
 }
 
 function tripCreateFailed(state, { errors }) {

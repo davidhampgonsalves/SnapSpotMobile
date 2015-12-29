@@ -1,11 +1,12 @@
 'use strict';
 
-var React = require('react-native');
-var bgGeo = require('react-native-background-geolocation');
-var ActivityView = require('react-native-activity-view');
+const React = require('react-native');
+const bgGeo = require('react-native-background-geolocation');
+const ActivityView = require('react-native-activity-view');
 
-import tripActions from './src/modules/trip/actions'
-const reactor = require('.reactor')
+import trip from './src/modules/trip/'
+import actionQueue from './src/modules/action-queue/'
+import reactor from './src/reactor'
 
 var {
   AppRegistry,
@@ -16,7 +17,9 @@ var {
 } = React;
 
 var SnapSpotMobile = React.createClass({
-  getInitialState: function() {
+  mixins: [reactor.ReactMixin],
+
+  getInitialState() {
     bgGeo.configure({
       desiredAccuracy: 0,
       stationaryRadius: 50,
@@ -45,7 +48,7 @@ var SnapSpotMobile = React.createClass({
     bgGeo.on('location', (location) => {
       console.log('- [js]location: ', JSON.stringify(location));
 
-      tripActions.newLocation(location)
+      trip.actions.newLocation(location)
       
       //todo; where can I put this that doesn't cause infinate loop
       //wipe sql cach on each location 
@@ -55,11 +58,17 @@ var SnapSpotMobile = React.createClass({
       // });
     });
 
-    return {state: STATES.stopped};
+    return {} 
+  },
+
+  getDataBindings() {
+    return {
+      trip: ['trip', 'trip']
+    }
   },
 
   _shareTrip() {
-    tripActions.startTrip(30)
+    var tripId = trip.actions.startTrip(30)
 
     // TODO: only start if user shared after this is committed: https://github.com/naoufal/react-native-activity-view/pull/21
     ActivityView.show({
@@ -68,43 +77,72 @@ var SnapSpotMobile = React.createClass({
       imageUrl: 'https://facebook.github.io/react/img/logo_og.png'
     });
 
-    
+    //TODO: need to handle errors?
     bgGeo.start(function() { console.log('- [js] bgGeo started successfully'); });
   },
 
   _endTrip() {
-    this.setState({
-      state: STATES.stopped,
-      secret: null,
-      id: null,
-    });
-
     bgGeo.stop();
-
-    // tripActions.endTrip()
+    const currentTrip = reactor.evaluateToJS(trip.getters.trip).trip
+    console.log('pulled trip from reactor', currentTrip)
+    trip.actions.deleteTrip(currentTrip)
   },
 
   render() {
+    const isTripStopped = this.state.trip.toJS().status !== trip.statuses.stopped 
+
     return (
       <View style={styles.viewMain}>
+        <ActionQueueStatus />
         <View style={styles.slider}>
           <Text> This would be the time slider and counter </Text>
         </View>
 
         <View style={styles.buttons}>
-          <TouchableHighlight onPress={this._endTrip} style={styles.btn}>
-            <Text style={styles.txt}>End Trip</Text>
-          </TouchableHighlight>
+          {isTripStopped ? <EndTripBtn onPress={ this._endTrip } /> : null}
           <TouchableHighlight onPress={this._shareTrip} style={styles.btn}>
             <Text style={styles.txt}>
-              {this.state.state !== STATES.stopped ? "Re-Share Trip" : "Share Trip" }
+              {isTripStopped ? "Re-Share Trip" : "Share Trip" }
             </Text>
           </TouchableHighlight>
         </View>
       </View>
     );
   }
-});
+})
+
+const ActionQueueStatus = React.createClass({
+  mixins: [reactor.ReactMixin],
+
+  getDataBindings() {
+    return {
+      actionQueue: ['actionQueue', 'actionQueue'],
+    }
+  },
+
+  render: function() {
+    var actions = []
+    console.log("rendering queue", this.state.actionQueue)
+    const queue = this.state.actionQueue
+    for(var i=0 ; i <= queue.size ; i++) {
+      actions.push(queue[i])
+    } 
+
+    return (
+      <Text>Queue({queue.size}): {actions}</Text> 
+    )
+  }
+})
+
+const EndTripBtn = React.createClass({
+  render: function() {
+    return (
+      <TouchableHighlight {...this.props} style={styles.btn}>
+        <Text style={styles.txt}>End Trip</Text> 
+      </TouchableHighlight>
+    )
+  }
+})
 
 var styles = StyleSheet.create({
   viewMain: {

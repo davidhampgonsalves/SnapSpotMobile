@@ -2,7 +2,7 @@
 
 import keyMirror from 'keyMirror'
 
-export default keyMirror({
+export default  keyMirror({
   TRIP_STARTING: null,
   TRIP_UPDATING: null,
   TRIP_DELETING: null,
@@ -15,5 +15,5 @@ export default keyMirror({
   TRIP_UPDATE_ERRORS: null, 
   TRIP_DELETE_ERRORS: null, 
 
-  CLEAR_ERRORS: null
+  CLEAR_ERRORS: null,
 })

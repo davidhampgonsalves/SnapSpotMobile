@@ -1,52 +1,52 @@
 'use strict'
 
-var uuid = require('uuid')
+import uuid from 'uuid'
 
-import reactor from'../../reactor'
+import reactor from '../../reactor'
 import apiActions from '../api/actions'
 import queueActions from '../action-queue/actions'
 import getters from './getters'
 
-import {
-  TRIP_STARTING,
-  TRIP_UPDATING,
-  CLEAR_ERRORS,
-  TRIP_CREATE,
-  TRIP_UPDATE,
-  TRIP_DELETE,
-  TRIP_CREATED,
-  TRIP_CREATE_ERRORS,
-  TRIP_UPDATE_ERRORS,
-} from './action-types'
+// import {
+//   actionTypes.TRIP_STARTING,
+//   actionTypes.TRIP_UPDATING,
+//   CLEAR_ERRORS,
+//   actionTypes.TRIP_CREATE,
+//   actionTypes.TRIP_UPDATE,
+//   actionTypes.TRIP_DELETE,
+//   actionTypes.TRIP_CREATED,
+//   actionTypes.TRIP_CREATE_ERRORS,
+//   actionTypes.TRIP_UPDATE_ERRORS,
+// } from './action-types'
+import actionTypes from './action-types'
 
 exports.startTrip = function startTrip(remainingMinutes) {
   const id = uuid.v4()
 
-  reactor.dispatch(TRIP_STARTING, {id: id, remainingMinutes: remainingMinutes})
+  reactor.dispatch(actionTypes.TRIP_STARTING, {id: id, remainingMinutes: remainingMinutes})
 
   const optionArgs = {id: id, remainingMinutes: remainingMinutes}
   const success = function tripCreateSuccess(secret) {
-    reactor.dispatch(TRIP_CREATED, {id: id, secret: secret})
+    reactor.dispatch(actionTypes.TRIP_CREATED, {id: id, secret: secret})
   }
   const failure = function tripCreateError(err) {
-    console.error("trip/actions failure", err)
-    reactor.dispatch(TRIP_CREATE_ERRORS, { errors: err })
+    reactor.dispatch(actionTypes.TRIP_CREATE_ERRORS, { errors: err })
   }
 
   queueActions.add('Create Trip', apiActions.createTrip, optionArgs, success, failure)
 }
 
 exports.updateTrip = function updateTrip(trip, remainingMinutes) {
-  reactor.dispatch(TRIP_UPDATING, {remainingMinutes: remainingMinutes})
+  reactor.dispatch(actionTypes.TRIP_UPDATING, {remainingMinutes: remainingMinutes})
   apiActions.updateTrip(trip, remainingMinutes)
 }
 
 exports.deleteTrip = function deleteTrip(trip) {
-  reactor.dispatch(TRIP_DELETING, {trip: trip})
+  reactor.dispatch(actionTypes.TRIP_DELETING, {trip: trip})
 
   const optionArgs = {trip: trip}
   const success = function tripDeleteSuccess(secret) {
-    reactor.dispatch(TRIP_DELETED, {trip: trip})
+    reactor.dispatch(actionTypes.TRIP_DELETED, {trip: trip})
   }
 
   queueActions.add('Delete Trip', apiActions.deleteTrip, optionArgs, success, undefined, true)
@@ -67,5 +67,5 @@ exports.newLocation = function newLocation(trip, location) {
 }
 
 exports.clearErrors = function clearErrors() {
-  reactor.dispatch(CLEAR_ERRORS)
+  reactor.dispatch(actionTypes.CLEAR_ERRORS)
 }

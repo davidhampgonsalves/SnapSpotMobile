@@ -1,9 +1,7 @@
 'use strict'
 
 const reactor = require('../../reactor')
-import {
-  TRIP_UPDATED,
-} from './action-types'
+import actionTypes from './action-types'
 const deviceActionTypes = require('../device/action-types')
 import trip from '../trip/index'
 
@@ -30,11 +28,11 @@ exports.createTrip = function createTrip({id, remainingMinutes}, success, failur
       return
     }
 
-    console.error('create-trip', url, resp)
-    failure(resp.errors)
+    console.warn('create-trip', url, resp)
+    failure(resp.warns)
   })
   .catch((error) => {
-    console.error('create-trip', url, error)
+    console.warn('create-trip', url, error)
     //TODO: need to pass back error types so can support api error and network error
     reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: error})
     failure(error)
@@ -60,20 +58,20 @@ exports.updateTrip = function updateTrip(trip, remainingMinutes) {
   .then((resp) => resp.json())
   .then((resp) => {
     if(resp.hasOwnProperty("errors")) {
-      console.error('update-trip', url, resp)
-      reactor.dispatch(TRIP_UPDATE_ERRORS, { originalTrip: trip, errors: resp.errors })
+      console.warn('update-trip', url, resp)
+      reactor.dispatch(actionTypes.TRIP_UPDATE_ERRORS, { originalTrip: trip, errors: resp.warns })
       return
     }
 
-    reactor.dispatch(TRIP_UPDATED, {remainingMinutes: remainingMinutes})
+    reactor.dispatch(actionTypes.TRIP_UPDATED, {remainingMinutes: remainingMinutes})
   })
   .catch((error) => {
-    console.error('update-trip', url, error)
+    console.warn('update-trip', url, error)
     reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: errors})
   })
 }
 
-exports.deleteTrip = function deleteTrip(trip, success, failure) {
+exports.deleteTrip = function deleteTrip({trip}, success, failure) {
   var url = API_HOST + "/v1/trips/" + trip.id
   var params = {
     id: trip.id,
@@ -95,11 +93,11 @@ exports.deleteTrip = function deleteTrip(trip, success, failure) {
       return
     }
 
-    console.error('delete-trip: ', url, resp)
-    failure(resp.errors)
+    console.warn('delete-trip: ', url, resp)
+    failure(resp.warns)
   })
   .catch((error) => {
-    console.error('delete-trip: ', url, error)
+    console.warn('delete-trip: ', url, error)
     reactor.dispatch(deviceActionTypes.NETWORK_ERROR, {errors: errors})
   })
 }
@@ -127,10 +125,10 @@ exports.addLocation = function addLocation({trip, location}, success, failure) {
       return
     }
 
-    failure(resp.errors)
+    failure(resp.warns)
   })
   .catch((error) => {
-    console.error('add-location', url, error)
-    reactor.dispatch(deviceActionTypes.NETWORK_ERROR, resp.errors)
+    console.warn('add-location', url, error)
+    reactor.dispatch(deviceActionTypes.NETWORK_ERROR, resp.warns)
   })
 }

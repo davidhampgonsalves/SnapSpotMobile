@@ -22,15 +22,14 @@
     ]
   },
   "dependencies": {
-    "babel-core": "6.2.1",
-    "keymirror": "^0.1.1",
     "nuclear-js": "1.2.1",
-    "react-native": "^0.15.0",
+    "uuid": "2.0.1",
+    "react-native": "0.17.0",
     "react-native-activity-view": "*",
-    "react-native-background-geolocation": "^0.1.1",
-    "uuid": "2.0.1"
+    "react-native-background-geolocation": "^0.3.0"
   },
   "devDependencies": {
+    "babel": "6.0.2",
     "jest": "*",
     "jest-cli": "^0.8.0",
     "node-fetch": "*"

@@ -1,7 +1,7 @@
 'use strict'
 
 import Action from './action'
-import { QUEUE_CHANGE } from './action-types'
+import actionTypes from './action-types'
 import reactor from '../../reactor'
 
 const queue = []
@@ -10,7 +10,7 @@ exports.queue = queue
 
 exports.add = function add(description, func, argOptions, success, failure, isCritical) { 
   const actionQueueSuccess = function actionQueueSuccess() {
-    reactor.dispatch(QUEUE_CHANGE, queue)
+    reactor.dispatch(actionTypes.QUEUE_CHANGE, queue)
     if(success)
       success.apply(undefined, arguments)
     exports.process() 
@@ -24,13 +24,13 @@ exports.add = function add(description, func, argOptions, success, failure, isCr
   const action = new Action(description, func, argOptions, actionQueueSuccess, actionQueueFailure, isCritical)
 
   queue.push(action)
-  reactor.dispatch(QUEUE_CHANGE, queue)
+  reactor.dispatch(actionTypes.QUEUE_CHANGE, queue)
   exports.process()
 }
 
 exports.process = function process() {
   while(queue.length > 0) {
-    action = queue[0]
+    var action = queue[0]
 
     if(action.isRunning) {
       if(!action.hasExpired())
@@ -46,7 +46,7 @@ exports.process = function process() {
     }
   }
 
-  reactor.dispatch(QUEUE_CHANGE, queue)
+  reactor.dispatch(actionTypes.QUEUE_CHANGE, queue)
 }
 
 //Removes all actions that aren't critical (trip delete)
@@ -56,5 +56,7 @@ exports.clearStale = function clearStale() {
     if(!action.isCritical)
       queue.splice(i, 1) 
   }
-  reactor.dispatch(QUEUE_CHANGE, queue)
+
+  console.log('dispatching from clear state')
+  reactor.dispatch(actionTypes.QUEUE_CHANGE, queue)
 }
