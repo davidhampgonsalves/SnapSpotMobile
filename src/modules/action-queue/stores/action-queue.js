@@ -21,5 +21,6 @@ export default Store({
 
 function queueChange(state, queue) {
   const descriptions = queue.filter((action) => !action.complete).map((action) => action.description)
+  //TODO: why do I need toImutable?
   return state.setIn(getters.queue, toImmutable(descriptions))
 }
