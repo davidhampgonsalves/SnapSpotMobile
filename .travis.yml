@@ -6,3 +6,4 @@ sudo: false
 
 before_install:
  - npm install -g npm@'>=2.13.0'
+ - npm install
